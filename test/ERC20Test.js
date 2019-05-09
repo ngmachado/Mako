@@ -64,13 +64,13 @@ contract("MAKO - ERC-20 Tests", async accounts => {
     it("should bypass payments", async () => {
         let initialBalanceSender = await web3.eth.getBalance(accounts[1]);
         let initialBalanceReceiver = await web3.eth.getBalance(accounts[2]);
-
-        await ProxyPayment(accounts[2], accounts[1], -1000000000000);
+        var amount = web3.utils.toWei("1", "ether");
+        await ProxyPayment(accounts[2], accounts[1], amount);
         
         let finalBalanceSender = await web3.eth.getBalance(accounts[1]);
         let finalBalanceReceiver = await web3.eth.getBalance(accounts[2]);
         
-        assert.isOk(Number(initialBalanceReceiver) < Number(finalBalanceReceiver), "should have credit the sender  account");
+        assert.equal(Number(initialBalanceReceiver) + Number(amount),  Number(finalBalanceReceiver), "should have credit the sender  account");
         assert.isOk(Number(initialBalanceSender) > Number(finalBalanceSender), "should have debit the sender account");
 
     });
