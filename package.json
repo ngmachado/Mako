@@ -1,0 +1,23 @@
+{
+  "name": "mako",
+  "version": "1.0.0",
+  "description": "Shinra-Corp Token",
+  "main": "truffle-config.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "erc777",
+    "erc20",
+    "token",
+    "etheruem"
+  ],
+  "author": "Shinra-Corp (axe)",
+  "license": "MIT",
+  "dependencies": {
+    "openzeppelin-solidity": "^2.2.0"
+  }
+}
