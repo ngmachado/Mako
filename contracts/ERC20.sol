@@ -48,7 +48,7 @@ contract ERC20 is IERC20 {
         require(balances[msg.sender] >= _value, "not enough tokens");
         
         balances[msg.sender] = balances[msg.sender].sub(_value);
-        balances[msg.sender] = balances[_to].add(_value);
+        balances[_to] = balances[_to].add(_value);
         
         emit Transfer(msg.sender, _to, _value);
         return true;

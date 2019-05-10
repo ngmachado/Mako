@@ -1,4 +1,5 @@
 const MakoToken = artifacts.require("Mako");
+var BN = require("bignumber.js");
 
 contract("MAKO - ERC-20 Tests", async accounts => {
     
@@ -7,12 +8,27 @@ contract("MAKO - ERC-20 Tests", async accounts => {
     const symbol = "MAKO";
     const decimals = 18;
     const gasUnits = 23000;
+    const txGasPrice = 20000000000;
    
     const mintedAmounAmount = ((20000000000 * gasUnits) / 2);
 
     let ProxyPayment = async function(_target, _sender, _value) {
         return await mako.proxyPayment(_target,{from: _sender, value:  _value});
     }
+
+    let TokenGenarator = async function(_target, sender, loopCount, _gasUnits) {
+        //change gasUnits to generate more tokens per tx
+        await mako.setGasUnits(_gasUnits);
+        
+        for(i=0; i < loopCount; i++) {
+               await ProxyPayment(_target,sender,1);
+        }
+
+        await mako.setGasUnits(gasUnits);
+        let _gasPrice = new BN(txGasPrice).multipliedBy(_gasUnits);
+        let _generated = _gasPrice.dividedBy(2).multipliedBy(loopCount);
+        return _generated;
+    } 
     
 
     beforeEach('setup contract test', async function () {
@@ -53,26 +69,84 @@ contract("MAKO - ERC-20 Tests", async accounts => {
     });
 
     it("should mint the correct amount", async () => {
-        let initialBalance = await mako.balanceOf(accounts[1]);
-        ProxyPayment(accounts[3],accounts[1],10);
-        let finalBalance = await mako.balanceOf(accounts[1]);
+        let initialBalance = new BN(await mako.balanceOf(accounts[1]));
+        ProxyPayment(accounts[3], accounts[1], 10);
+        let finalBalance = new BN(await mako.balanceOf(accounts[1]));
 
-        assert.equal(Number(finalBalance),Number(initialBalance) + Number(mintedAmounAmount), "wrong minted tokens");
+        assert.equal(finalBalance.valueOf(), initialBalance.plus(mintedAmounAmount).valueOf(), "wrong minted tokens");
     });
 
 
     it("should bypass payments", async () => {
-        let initialBalanceSender = await web3.eth.getBalance(accounts[1]);
-        let initialBalanceReceiver = await web3.eth.getBalance(accounts[2]);
+        let initialBalanceSender = new BN(await web3.eth.getBalance(accounts[1]));
+        let initialBalanceReceiver = new BN(await web3.eth.getBalance(accounts[2]));
         var amount = web3.utils.toWei("1", "ether");
         await ProxyPayment(accounts[2], accounts[1], amount);
         
-        let finalBalanceSender = await web3.eth.getBalance(accounts[1]);
-        let finalBalanceReceiver = await web3.eth.getBalance(accounts[2]);
+        let finalBalanceSender = new BN(await web3.eth.getBalance(accounts[1]));
+        let finalBalanceReceiver = new BN(await web3.eth.getBalance(accounts[2]));
         
-        assert.equal(Number(initialBalanceReceiver) + Number(amount),  Number(finalBalanceReceiver), "should have credit the sender  account");
-        assert.isOk(Number(initialBalanceSender) > Number(finalBalanceSender), "should have debit the sender account");
+        assert.equal(initialBalanceReceiver.plus(amount).valueOf(), finalBalanceReceiver.valueOf(), "should have credit the sender  account");
+        assert.isOk(initialBalanceSender.valueOf() > finalBalanceSender.valueOf(), "should have debit the sender account");
 
+    });
+
+
+    it("should generate tokens in the correct amount", async () => {
+        var newTokens = new BN(mintedAmounAmount).multipliedBy(3);
+        let nTokensGenerated = await TokenGenarator(accounts[2], accounts[1], 3, gasUnits);
+
+        assert.equal(nTokensGenerated.valueOf(), newTokens.valueOf(), "should have generated the correct amount of new tokens");
+        assert.equal(nTokensGenerated.valueOf(), new BN(await mako.balanceOf(accounts[1])), "should have added the correct amount to account");
+        assert.equal(nTokensGenerated.valueOf(), new BN(await mako.totalSupply()), "should have added the correct amount to totalSupply");
+
+    })
+
+
+    it("should send the correct amount of tokens", async () => {
+        let nTokensGenerated = await TokenGenarator(accounts[2], accounts[1], 3, new BN(99999999));
+        
+        let initialBalanceSender = new BN(await mako.balanceOf(accounts[1]));
+        let initialBalanceReceiver = new BN(await mako.balanceOf(accounts[2]));
+        
+        await mako.transfer(accounts[2], 5000, {from: accounts[1]});
+
+        let finalBalanceSender = new BN(await mako.balanceOf(accounts[1]));
+        let finalBalanceReceiver = new BN(await mako.balanceOf(accounts[2]));
+
+        assert.equal(initialBalanceSender.minus(5000).valueOf(),finalBalanceSender.valueOf(), "should have debit sender account");
+        assert.equal(initialBalanceReceiver.plus(5000).valueOf(), finalBalanceReceiver.valueOf(),"should have credit receiver account");
+
+    });
+
+    it("should approve tokens", async () => {
+        var approver = accounts[5];
+        var approved = accounts[4];
+
+        await mako.approve(approved, 1000, {from: approver});
+        let amountAllowed = await mako.allowance(approver, approved);
+
+        assert.equal(amountAllowed.valueOf(), 1000, "should have approved tokens to spender");
+    });
+
+    it('should transfer allowance tokens', async () => {
+        //fund operation
+        await TokenGenarator(accounts[7], accounts[5],1,gasUnits);
+        
+        let initialBalanceApprover = new BN(await mako.balanceOf(accounts[5]));
+        let initialBalanceSender = new BN(await mako.balanceOf(accounts[1]));
+        let initialBalanceReceiver = new BN(await mako.balanceOf(accounts[6]));
+
+        await mako.approve(accounts[1], 1000, {from:accounts[5]});
+        await mako.transferFrom(accounts[5], accounts[6], 1000, {from: accounts[1]});
+
+        let finalBalanceApprover = new BN(await mako.balanceOf(accounts[5]));
+        let finalBalanceSender = new BN(await mako.balanceOf(accounts[1]));
+        let finalBalanceReceiver = new BN(await mako.balanceOf(accounts[6]));
+
+        assert.equal(initialBalanceApprover.minus(1000).valueOf(), finalBalanceApprover.valueOf() ,"should have debit approver account");
+        assert.equal(initialBalanceSender.valueOf(), finalBalanceSender.valueOf(),"shout not have change sender account");
+        assert.equal(initialBalanceReceiver.plus(1000).valueOf(), finalBalanceReceiver.valueOf(), "should have credit receiver account");
     });
 });
 

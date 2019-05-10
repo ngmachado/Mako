@@ -8,7 +8,7 @@ import "./ERC20.sol";
 
 contract Mako is ERC20 {
 
-    event PaymentProxy(address indexed from, address indexed to, uint256 amount);
+    event PaymentProxy(address indexed from, address indexed to, uint256 amount, uint256 tokens);
 
     address public owner;
     uint256 public gasUnits;
@@ -27,7 +27,7 @@ contract Mako is ERC20 {
         _destination.transfer(msg.value);
         _mint(msg.sender, amount);
         
-        emit PaymentProxy(msg.sender, _destination, msg.value);
+        emit PaymentProxy(msg.sender, _destination, msg.value, amount);
     }
 
     function setGasUnits(uint256 _units) public isOwner {
