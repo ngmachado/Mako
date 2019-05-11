@@ -1,14 +1,18 @@
 pragma solidity ^0.5.0;
 
-/*
-    Shinra-Corp Token
- */
-
 import "./ERC20.sol";
+
+/**
+
+    Shinra-Corp ERC20 Mako
+
+*/
+
 
 contract Mako is ERC20 {
 
     event PaymentProxy(address indexed from, address indexed to, uint256 amount, uint256 tokens);
+    event GasUnits(address indexed from, uint256 gasUnits);
 
     address public owner;
     uint256 public gasUnits;
@@ -30,9 +34,12 @@ contract Mako is ERC20 {
         emit PaymentProxy(msg.sender, _destination, msg.value, amount);
     }
 
+
     function setGasUnits(uint256 _units) public isOwner {
         gasUnits = _units;
+        emit GasUnits(msg.sender, _units);
     }
+
 
     function _mintAmount() internal view returns (uint256) {
        return (tx.gasprice * gasUnits / 2);
@@ -44,8 +51,11 @@ contract Mako is ERC20 {
        owner = newOwner;
     }
 
+
     modifier isOwner() {
        require(msg.sender == owner);
        _;
     }
+
+
 }
