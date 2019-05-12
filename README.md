@@ -1,4 +1,5 @@
-<<<<<<< HEAD
+### WIP
+
 # Mako is the energy for modern world!
 
 #### We transform Mako liquid in electricity, so we can live a good modern life!
@@ -63,6 +64,3 @@ Yes! You are right.
 
 ### Please by aware this is a learning project, don't trust the code, review it!
 =======
-# Mako
-WIP Mako Token
->>>>>>> 68ce8d1273aaa824b350f0757c1c9d7f7fd9e71f
