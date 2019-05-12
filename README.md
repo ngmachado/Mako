@@ -63,4 +63,3 @@ Yes! You are right.
 [Mako in Ropsten](https://ropsten.etherscan.io/address/0x85965fc432f8366d6a6be2c0fea04ece27e48d0e "Mako")
 
 ### Please by aware this is a learning project, don't trust the code, review it!
-=======
