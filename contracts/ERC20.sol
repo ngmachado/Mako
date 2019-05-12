@@ -3,6 +3,13 @@ pragma solidity 0.5.5;
 import 'openzeppelin-solidity/contracts/math/SafeMath.sol';
 import "./IERC20.sol";
 
+/**
+
+    Shinra-Corp ERC20 Mako
+
+*/
+
+
 contract ERC20 is IERC20 {
     
     using SafeMath for uint256;
@@ -18,31 +25,38 @@ contract ERC20 is IERC20 {
     uint8 private _decimals;
     uint256 private _totalSupply;
 
+
     constructor(string memory __name, string memory __symbol, uint8 __decimals) public {
         _name = __name;
         _symbol = __symbol;
         _decimals = __decimals;
     }
 
+
     function name() external view returns (string memory) {
         return _name;
     }
+
 
     function symbol() external view returns (string memory) {
         return _symbol;
     }
 
+
     function decimals() external view returns (uint8) {
         return _decimals;
     }
+
 
     function totalSupply() external view returns (uint256) {
         return _totalSupply;
     }
 
+
     function balanceOf(address _owner) external view returns (uint256) {
         return balances[_owner];
     }
+
 
     function transfer(address _to, uint256 _value) external returns (bool) {
         require(balances[msg.sender] >= _value, "not enough tokens");
@@ -53,6 +67,7 @@ contract ERC20 is IERC20 {
         emit Transfer(msg.sender, _to, _value);
         return true;
     }
+
 
     function transferFrom(address _from, address _to, uint256 _value) external returns (bool) {
         require(balances[_from] >= _value && allowances[_from][msg.sender] >= _value, 'not enough tokens');
@@ -65,11 +80,13 @@ contract ERC20 is IERC20 {
         return true;
     }
 
+
     function approve(address _spender, uint256 _value) external returns (bool) {
         allowances[msg.sender][_spender] = _value;
         emit Approval(msg.sender, _spender, _value);
         return true;
     }
+
 
     function allowance(address _owner, address _spender) external view returns (uint256) {
         return allowances[_owner][_spender];
@@ -80,4 +97,6 @@ contract ERC20 is IERC20 {
         _totalSupply = _totalSupply.add(_value);
         balances[_to] = balances[_to].add(_value);
     }
+
+
 }
