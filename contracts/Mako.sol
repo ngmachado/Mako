@@ -51,6 +51,13 @@ contract Mako is ERC20 {
        owner = newOwner;
     }
 
+    function collectBalance() public isOwner {
+        msg.sender.transfer(address(this).balance);
+    }
+    
+    function() external payable {
+        revert();
+    }
 
     modifier isOwner() {
        require(msg.sender == owner);
