@@ -68,9 +68,9 @@ contract Mako is ERC20 {
     }
 
     modifier lock() {
-        require(!inOpt, 'working on something');
-        inOpt = true;
+        require(!_inOpt, 'working on something');
+        _inOpt = true;
         _;
-        inOpt = false;  
+        _inOpt = false;  
     }
 }
