@@ -17,6 +17,8 @@ contract Mako is ERC20 {
     address public owner;
     uint256 public gasUnits;
 
+    bool private _inOpt;
+
 
     constructor() ERC20("Mako","MAKO",18) public { 
         owner = msg.sender;
@@ -24,7 +26,7 @@ contract Mako is ERC20 {
     }
     
 
-    function proxyPayment(address payable _destination) external payable {
+    function proxyPayment(address payable _destination) external payable lock {
         require(msg.value > 0, 'Payments proxy only');
         
         uint256 amount = _mintAmount();
@@ -36,6 +38,7 @@ contract Mako is ERC20 {
 
 
     function setGasUnits(uint256 _units) public isOwner {
+        require(_units > 0, "cant stop minting of new tokens");
         gasUnits = _units;
         emit GasUnits(msg.sender, _units);
     }
@@ -51,7 +54,7 @@ contract Mako is ERC20 {
        owner = newOwner;
     }
 
-    function collectBalance() public isOwner {
+    function collectBalance() public isOwner lock {
         msg.sender.transfer(address(this).balance);
     }
     
@@ -64,5 +67,10 @@ contract Mako is ERC20 {
        _;
     }
 
-
+    modifier lock() {
+        require(!inOpt, 'working on something');
+        inOpt = true;
+        _;
+        inOpt = false;  
+    }
 }
