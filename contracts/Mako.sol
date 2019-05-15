@@ -3,9 +3,7 @@ pragma solidity ^0.5.0;
 import "./ERC20.sol";
 
 /**
-
     Shinra-Corp ERC20 Mako
-
 */
 
 
@@ -17,10 +15,10 @@ contract Mako is ERC20 {
     address public owner;
     uint256 public gasUnits;
 
-    bool private _inOpt;
+    bool private _inOpr;
 
 
-    constructor() ERC20("Mako","MAKO",18) public { 
+    constructor(address engine) ERC20("Mako", "MAKO", 18, engine) public { 
         owner = msg.sender;
         gasUnits = 23000;
     }
@@ -58,6 +56,7 @@ contract Mako is ERC20 {
         msg.sender.transfer(address(this).balance);
     }
     
+    
     function() external payable {
         revert();
     }
@@ -68,9 +67,9 @@ contract Mako is ERC20 {
     }
 
     modifier lock() {
-        require(!_inOpt, 'working on something');
-        _inOpt = true;
+        require(!_inOpr, 'working on something');
+        _inOpr = true;
         _;
-        _inOpt = false;  
+        _inOpr = false;  
     }
 }

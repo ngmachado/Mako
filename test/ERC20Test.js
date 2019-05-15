@@ -32,7 +32,7 @@ contract("MAKO - ERC-20 Tests", async accounts => {
     
 
     beforeEach('setup contract test', async function () {
-      mako = await MakoToken.new({from: owner})
+      mako = await MakoToken.new(accounts[8], {from: owner})
     });
 
     it("should deploy the correct parameters", async () => {
