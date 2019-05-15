@@ -96,6 +96,7 @@ contract ERC20 is IERC20, IBurnerEngine {
         return allowances[_owner][_spender];
     }
 
+
     function burn(uint256 _amount) external {
         require(balances[msg.sender] >= _amount, "not enough tokens");
 
@@ -103,6 +104,7 @@ contract ERC20 is IERC20, IBurnerEngine {
 
         emit BurnerEngine(msg.sender, _engine, _amount);
     }
+
 
     function burnFrom(address _from, uint256 _amount) external {
 
@@ -112,13 +114,12 @@ contract ERC20 is IERC20, IBurnerEngine {
         allowances[_from][msg.sender] = allowances[_from][msg.sender].sub(_amount);
 
         emit BurnerEngine(msg.sender, _engine, _amount);
-
     }
+
 
     function _mint(address _to, uint256 _value) internal {
         _totalSupply = _totalSupply.add(_value);
         balances[_to] = balances[_to].add(_value);
     }
-
 
 }
