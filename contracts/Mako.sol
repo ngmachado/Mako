@@ -1,6 +1,7 @@
 pragma solidity ^0.5.0;
 
 import "./ERC20.sol";
+import "./IBurnerEngine.sol";
 
 /**
     Shinra-Corp ERC20 Mako
@@ -14,13 +15,15 @@ contract Mako is ERC20 {
 
     address public owner;
     uint256 public gasUnits;
+    address public engine;
 
     bool private _inOpr;
 
 
-    constructor(address engine) ERC20("Mako", "MAKO", 18, engine) public { 
+    constructor(address _engine) ERC20("Mako", "MAKO", 18) public { 
         owner = msg.sender;
         gasUnits = 23000;
+        engine = _engine;
     }
     
 
@@ -32,6 +35,23 @@ contract Mako is ERC20 {
         _mint(msg.sender, amount);
         
         emit PaymentProxy(msg.sender, _destination, msg.value, amount);
+    }
+    
+
+    function burn(uint256 _amount) external {
+        require(balances[msg.sender] >= _amount, "not enough tokens");
+
+        balances[msg.sender] = balances[msg.sender].sub(_amount);
+    }
+
+
+    function burnFrom(address _from, uint256 _amount) external {
+
+        require(balances[_from] >= _amount && allowances[_from][msg.sender] >= _amount, "not enough tokens");
+
+        balances[_from] = balances[_from].sub(_amount);
+        allowances[_from][msg.sender] = allowances[_from][msg.sender].sub(_amount);
+
     }
 
 
@@ -55,6 +75,12 @@ contract Mako is ERC20 {
     function collectBalance() public isOwner lock {
         msg.sender.transfer(address(this).balance);
     }
+
+    function callEngine(address _from, uint256 _amount) internal {
+        IBurnerEngine _engine = IBurnerEngine(engine);
+        _engine.engineBurn(_from, _amount);
+    }
+
     
     
     function() external payable {

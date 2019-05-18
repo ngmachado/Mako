@@ -1,4 +1,6 @@
+const MockEngine = artifacts.require("MockEngine");
 const MakoToken = artifacts.require("Mako");
+
 var BN = require("bignumber.js");
 
 contract("MAKO - ERC-20 Tests", async accounts => {
@@ -32,7 +34,7 @@ contract("MAKO - ERC-20 Tests", async accounts => {
     
 
     beforeEach('setup contract test', async function () {
-      mako = await MakoToken.new(accounts[8], {from: owner})
+        mako = await MakoToken.new(MockEngine.address, {from: owner})
     });
 
     it("should deploy the correct parameters", async () => {
@@ -147,6 +149,17 @@ contract("MAKO - ERC-20 Tests", async accounts => {
         assert.equal(initialBalanceApprover.minus(1000).valueOf(), finalBalanceApprover.valueOf() ,"should have debit approver account");
         assert.equal(initialBalanceSender.valueOf(), finalBalanceSender.valueOf(),"shout not have change sender account");
         assert.equal(initialBalanceReceiver.plus(1000).valueOf(), finalBalanceReceiver.valueOf(), "should have credit receiver account");
+    });
+
+    it("should burn some tokens", async () => {
+        //fund operation
+        await TokenGenarator(accounts[7], accounts[5],1,gasUnits);
+        
+        let initialBalanceBurner = new BN(await mako.balanceOf(accounts[5]));
+        await mako.burn(1000, {from : accounts[5]});
+        let finalBalanceBurner = new BN(await mako.balanceOf(accounts[5]));
+
+        assert.equal(initialBalanceBurner.minus(1000).valueOf(), finalBalanceBurner.valueOf())
     });
 });
 
